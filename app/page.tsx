@@ -1,6 +1,9 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 
+// 🔴 這裡就是把隔壁的「核心專案模塊」拉進主頁面的管線
+import ProjectSection from "../components/ProjectSection";
+
 interface QueueItem {
   from: string;
   to: string;
@@ -13,9 +16,7 @@ export default function Home() {
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const subtitleRef = useRef<HTMLParagraphElement | null>(null);
   const scrambleRefs = useRef<(HTMLElement | null)[]>([]);
-  const glitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  const [isGlitching, setIsGlitching] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
   // 自訂導航點擊：權限鎖定與平滑滾動
@@ -24,8 +25,8 @@ export default function Home() {
 
     const el = e.target as HTMLElement;
 
-    // 🔴 實裝：所有還沒開通的模塊，一律給予阻斷回饋
-    if (targetId === 'project' || targetId === 'pricing' || targetId === 'aboutus') {
+    // 🔴 實裝：已解鎖 project 與 contactus，目前只阻斷尚未開發的 pricing
+    if (targetId === 'pricing') {
       const originalText = el.innerText;
       el.innerText = "[ ACCESS DENIED ]";
       el.style.color = "#ef4444"; // 警告紅
@@ -226,7 +227,6 @@ export default function Home() {
 
         .hero-title-wrapper { position: relative; display: inline-block; }
 
-        /* 🔴 微調：將極巨化 18rem 收斂至 15rem，保留完美的呼吸留白空間 */
         .hero-title {
           font-size: clamp(5rem, 16vw, 15rem); font-weight: 900; line-height: 1; letter-spacing: -0.06em;
           position: relative; cursor: crosshair; user-select: none; color: var(--repo-dark);
@@ -234,23 +234,13 @@ export default function Home() {
             calc(var(--mouse-x) * 0.5px) calc(var(--mouse-y) * 0.5px) 0 rgba(56, 189, 248, 0.5),
             calc(var(--mouse-x) * -0.4px) calc(var(--mouse-y) * -0.6px) 0 rgba(52, 211, 153, 0.5),
             calc(var(--mouse-x) * -0.2px) calc(var(--mouse-y) * 0.8px) 0 rgba(148, 163, 184, 0.3);
-          transition: text-shadow 0.1s ease-out; z-index: 2;
+          transition: text-shadow 0.2s ease-out, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), letter-spacing 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          z-index: 2;
         }
 
-        /* 藍、綠、灰三色暴力撕裂特效 */
-        .hero-title.is-glitching { 
-          animation: glitch-anim 0.2s infinite; 
-          color: transparent; 
-          -webkit-text-stroke: 2px var(--repo-dark); 
-        }
-
-        @keyframes glitch-anim {
-          0% { text-shadow: 6px 4px 0px var(--repo-blue), -6px -4px 0px var(--repo-green), 0px 6px 0px var(--repo-grey); }
-          20% { text-shadow: -6px 4px 0px var(--repo-grey), 6px -4px 0px var(--repo-blue), -4px 0px 0px var(--repo-green); }
-          40% { text-shadow: 6px -4px 0px var(--repo-green), -6px 4px 0px var(--repo-grey), 4px 0px 0px var(--repo-blue); }
-          60% { text-shadow: -6px -4px 0px var(--repo-blue), 6px 4px 0px var(--repo-green), 0px -4px 0px var(--repo-grey); }
-          80% { text-shadow: 6px 6px 0px var(--repo-grey), -6px -6px 0px var(--repo-blue), 4px 2px 0px var(--repo-green); }
-          100% { text-shadow: 6px 4px 0px var(--repo-blue), -6px -4px 0px var(--repo-green), 0px 6px 0px var(--repo-grey); }
+        .hero-title:hover {
+          transform: scale(1.02);
+          letter-spacing: -0.03em;
         }
 
         .reveal-text { position: relative; display: inline-block; overflow: hidden; }
@@ -276,7 +266,6 @@ export default function Home() {
         .crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
         .crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
         
-        /* 準星推至畫面兩側極端邊緣 */
         .ch-1 { top: 15%; left: 5%; }
         .ch-2 { bottom: 25%; right: 5%; }
 
@@ -306,7 +295,6 @@ export default function Home() {
         .ticker-dot { width: 6px; height: 6px; background-color: var(--repo-green); border-radius: 50%; box-shadow: 0 0 8px var(--repo-green); }
         @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        /* 🔴 野獸派儀表板 (Dashboard Panels) */
         .industrial-panel {
           position: relative;
           border-top: 1px solid var(--repo-grey);
@@ -334,7 +322,6 @@ export default function Home() {
         }
         .font-mono-sys { font-family: 'Courier New', Courier, monospace; }
 
-        /* 🔴 流程卡片的雷射切割數字 */
         .process-flow-grid {
           position: relative;
           padding-top: 2rem;
@@ -352,7 +339,6 @@ export default function Home() {
           background: white;
           box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
         }
-        /* laser-cut 空心數字 */
         .process-watermark {
           position: absolute; top: 1rem; right: 1rem;
           font-family: 'Courier New', monospace;
@@ -398,7 +384,7 @@ export default function Home() {
         <a 
           href="#home"
           onClick={(e) => handleNavClick(e, 'home')}
-          className="font-black text-3xl tracking-tighter cursor-pointer text-zinc-900 pointer-events-auto scramble-target block" 
+          className="font-black text-3xl tracking-tighter cursor-pointer text-zinc-900 pointer-events-auto block scramble-target" 
           data-text="REPO.SYS"
         >
           REPO.SYS
@@ -411,7 +397,7 @@ export default function Home() {
                 key={item} 
                 href={`#${targetId}`} 
                 onClick={(e) => handleNavClick(e, targetId)}
-                className="nav-link-custom scramble-target inline-block" 
+                className="nav-link-custom inline-block scramble-target" 
                 data-text={item}
               >
                 {item}
@@ -422,7 +408,7 @@ export default function Home() {
       </nav>
 
       {/* ====================================================
-          第一頁 (Hero Section) - 收斂後的 15rem 完美呼吸感
+          第一頁 (Hero Section)
          ==================================================== */}
       <section id="home" className="relative z-10 w-full min-h-[100svh] flex flex-col justify-between items-center text-center px-4 pt-[20vh] pb-[12vh]">
         <div className="crosshair ch-1 hidden md:block"></div>
@@ -430,19 +416,7 @@ export default function Home() {
 
         <div className="flex-1 flex flex-col justify-center w-full">
           <div className="hero-title-wrapper">
-            <h1 
-              className={`hero-title font-sans ${isGlitching ? 'is-glitching' : ''} scramble-target`} 
-              data-text="REPO"
-              onMouseEnter={() => {
-                setIsGlitching(true);
-                if (glitchTimeoutRef.current) clearTimeout(glitchTimeoutRef.current);
-                glitchTimeoutRef.current = setTimeout(() => setIsGlitching(false), 1000);
-              }}
-              onMouseLeave={() => {
-                setIsGlitching(false);
-                if (glitchTimeoutRef.current) clearTimeout(glitchTimeoutRef.current);
-              }}
-            >
+            <h1 className="hero-title font-sans scramble-target" data-text="REPO">
               REPO
             </h1>
           </div>
@@ -463,9 +437,9 @@ export default function Home() {
 
       {/* ====================================================
           第二頁 (Contact Us - Origin & Directive)
-          🔴 數據終端 (Data Terminal) 排版
          ==================================================== */}
-      <section id="aboutus" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
+      {/* 🔴 修正 BUG：統一將 id 改為 contactus 以對接導航列 */}
+      <section id="contactus" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
         <div className="mb-20">
           <p className="font-mono-sys text-zinc-600 text-sm tracking-[0.3em] mb-4 scramble-target" data-text="[ SEC.02 ] ORIGIN & DIRECTIVE">
             [ SEC.02 ] ORIGIN & DIRECTIVE
@@ -512,8 +486,12 @@ export default function Home() {
       </section>
 
       {/* ====================================================
+          🔴 核心專案模塊 (ProjectSection) 正式植入
+         ==================================================== */}
+      <ProjectSection />
+
+      {/* ====================================================
           第三頁 (Protocol - Process)
-          🔴 工廠自動化裝配線 (Assembly Line Flow)
          ==================================================== */}
       <section id="protocol" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
         <div className="mb-20 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-8">
