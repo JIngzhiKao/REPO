@@ -1,9 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 
-// 🔴 這裡就是把隔壁的「核心專案模塊」拉進主頁面的管線
-import ProjectSection from "../components/ProjectSection";
-
 interface QueueItem {
   from: string;
   to: string;
@@ -19,37 +16,25 @@ export default function Home() {
   
   const [isScanning, setIsScanning] = useState(false);
 
-  // 自訂導航點擊：權限鎖定與平滑滾動
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+  // 🔴 導航點擊：保留掃描特效，並改為真實路由跳轉
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault();
 
-    const el = e.target as HTMLElement;
-
-    // 🔴 實裝：已解鎖 project 與 contactus，目前只阻斷尚未開發的 pricing
-    if (targetId === 'pricing') {
-      const originalText = el.innerText;
-      el.innerText = "[ ACCESS DENIED ]";
-      el.style.color = "#ef4444"; // 警告紅
-      el.style.transform = "scale(0.95)";
-      
-      setTimeout(() => {
-        el.innerText = originalText;
-        el.style.color = "var(--repo-grey)";
-        el.style.transform = "scale(1)";
-      }, 800);
-      return; // 終止滾動
-    }
-
-    // HOME 正常的滾動與雷射掃描邏輯
+    // 觸發雷射掃描作為過場特效
     setIsScanning(true);
+    
+    // 延遲 800ms（等待特效跑完）後執行真正的頁面跳轉
     setTimeout(() => {
       setIsScanning(false);
+      
+      if (path === 'home' || path === '/') {
+        // 若在首頁點擊 HOME，平滑滾動至頂部
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        // 導向你剛剛建立的 /project, /pricing, /contactus 等頁面
+        window.location.href = `/${path}`;
+      }
     }, 800);
-
-    const target = document.getElementById(targetId);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
-    }
   };
 
   useEffect(() => {
@@ -382,7 +367,7 @@ export default function Home() {
       {/* 導覽列 */}
       <nav className="fixed top-0 left-0 w-full z-50 p-6 md:px-12 flex justify-between items-center pointer-events-none">
         <a 
-          href="#home"
+          href="/"
           onClick={(e) => handleNavClick(e, 'home')}
           className="font-black text-3xl tracking-tighter cursor-pointer text-zinc-900 pointer-events-auto block scramble-target" 
           data-text="REPO.SYS"
@@ -391,12 +376,13 @@ export default function Home() {
         </a>
         <div className="hidden md:flex gap-10 font-bold text-lg tracking-widest pointer-events-auto">
           {['HOME', 'PROJECT', 'PRICING', 'Contact US'].map((item) => {
-            const targetId = item.toLowerCase().replace(' ', '');
+            const path = item.toLowerCase().replace(' ', '');
+            const targetHref = path === 'home' ? '/' : `/${path}`;
             return (
               <a 
                 key={item} 
-                href={`#${targetId}`} 
-                onClick={(e) => handleNavClick(e, targetId)}
+                href={targetHref} 
+                onClick={(e) => handleNavClick(e, path)}
                 className="nav-link-custom inline-block scramble-target" 
                 data-text={item}
               >
@@ -408,7 +394,7 @@ export default function Home() {
       </nav>
 
       {/* ====================================================
-          第一頁 (Hero Section)
+         第一頁 (Hero Section)
          ==================================================== */}
       <section id="home" className="relative z-10 w-full min-h-[100svh] flex flex-col justify-between items-center text-center px-4 pt-[20vh] pb-[12vh]">
         <div className="crosshair ch-1 hidden md:block"></div>
@@ -436,9 +422,8 @@ export default function Home() {
       </section>
 
       {/* ====================================================
-          第二頁 (Contact Us - Origin & Directive)
+         第二頁 (Contact Us - Origin & Directive)
          ==================================================== */}
-      {/* 🔴 修正 BUG：統一將 id 改為 contactus 以對接導航列 */}
       <section id="contactus" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
         <div className="mb-20">
           <p className="font-mono-sys text-zinc-600 text-sm tracking-[0.3em] mb-4 scramble-target" data-text="[ SEC.02 ] ORIGIN & DIRECTIVE">
@@ -486,12 +471,7 @@ export default function Home() {
       </section>
 
       {/* ====================================================
-          🔴 核心專案模塊 (ProjectSection) 正式植入
-         ==================================================== */}
-      <ProjectSection />
-
-      {/* ====================================================
-          第三頁 (Protocol - Process)
+         第三頁 (Protocol - Process)
          ==================================================== */}
       <section id="protocol" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
         <div className="mb-20 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-8">
@@ -529,7 +509,7 @@ export default function Home() {
       </section>
 
       {/* ====================================================
-          固定底部系統輪播列
+         固定底部系統輪播列
          ==================================================== */}
       <div className="ticker-container">
         <div className="ticker-wrapper">
