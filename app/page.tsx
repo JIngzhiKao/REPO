@@ -4,9 +4,10 @@ import React, { useEffect, useRef } from "react";
 export default function Home() {
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const subtitleRef = useRef<HTMLParagraphElement | null>(null);
+  const repoTextRef = useRef<HTMLDivElement | null>(null); // 新增：用於觸發點擊能量波的 Ref
 
   useEffect(() => {
-    // 磁性按鈕互動 (保留此微互動以增加科技感)
+    // 磁性按鈕互動邏輯
     const btn = btnRef.current;
     const handleBtnMove = (e: MouseEvent) => {
       if (!btn) return;
@@ -24,7 +25,7 @@ export default function Home() {
       btn.addEventListener("mouseleave", handleBtnLeave);
     }
 
-    // 副標題滑動浮現特效
+    // 副標題滑動浮現
     setTimeout(() => {
       if (subtitleRef.current) {
         subtitleRef.current.classList.add("active");
@@ -39,40 +40,154 @@ export default function Home() {
     };
   }, []);
 
+  // 處理大字點擊的能量波特效
+  const handleRepoClick = () => {
+    if (repoTextRef.current) {
+      repoTextRef.current.classList.remove("clicked");
+      void repoTextRef.current.offsetWidth; // 觸發重繪以重複播放動畫
+      repoTextRef.current.classList.add("clicked");
+    }
+  };
+
   return (
     <main className="relative w-full z-10 flex flex-col items-center">
+      {/* 🔴 注入 Proposal A 互動進化版：磁性收合與點擊爆發 CSS */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hero-repo-container {
+          position: relative;
+          display: inline-block;
+          font-size: clamp(4rem, 15vw, 8.5rem); 
+          font-weight: 900;
+          color: #1a1a1a;
+          letter-spacing: -0.05em;
+          text-transform: uppercase;
+          line-height: 1;
+          cursor: pointer;
+          user-select: none;
+          transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hero-layer {
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+          pointer-events: none;
+        }
+
+        /* 粉彩馬卡龍色系 3D 圖層 */
+        .hero-layer-blue {
+          color: #8cc6e7; 
+          transform: translate(-10px, 8px);
+          z-index: -1;
+          opacity: 0.9;
+        }
+        .hero-layer-green {
+          color: #a8d5b2; 
+          transform: translate(8px, -12px);
+          z-index: -2;
+          opacity: 0.9;
+        }
+        .hero-layer-grey {
+          color: #b0b0b0; 
+          transform: translate(16px, 12px);
+          z-index: -3;
+          opacity: 0.9;
+        }
+
+        /* Hover: 磁性歸零收合 */
+        .hero-repo-container:hover .hero-layer {
+          transform: translate(0px, 0px);
+        }
+
+        /* Active: 物理下壓與能量炸開 */
+        .hero-repo-container:active {
+          transform: scale(0.96); 
+        }
+        .hero-repo-container:active .hero-layer-blue {
+          transform: translate(-20px, 16px) !important;
+          opacity: 1;
+          transition: transform 0.1s ease-out; 
+        }
+        .hero-repo-container:active .hero-layer-green {
+          transform: translate(16px, -24px) !important;
+          opacity: 1;
+          transition: transform 0.1s ease-out;
+        }
+        .hero-repo-container:active .hero-layer-grey {
+          transform: translate(32px, 24px) !important;
+          opacity: 1;
+          transition: transform 0.1s ease-out;
+        }
+
+        /* 衝擊能量波 */
+        .hero-shockwave {
+          position: absolute;
+          top: 50%; left: 50%;
+          width: 0; height: 0;
+          border: 2px solid rgba(140, 198, 231, 0.8);
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          opacity: 0;
+          pointer-events: none;
+          z-index: -4;
+        }
+        .hero-repo-container.clicked .hero-shockwave {
+          animation: repo-burst 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes repo-burst {
+          0% { width: 50px; height: 50px; opacity: 1; border-width: 10px; }
+          100% { width: 500px; height: 500px; opacity: 0; border-width: 1px; }
+        }
+      `}} />
+
       {/* ====================================================
-         第一頁 (Hero Section)
+         [ SEC.01 ] HERO SECTION
          ==================================================== */}
       <section id="home" className="relative z-10 w-full min-h-[100svh] flex flex-col justify-between items-center text-center px-4 pt-[20vh] pb-[12vh]">
         <div className="crosshair ch-1 hidden md:block"></div>
         <div className="crosshair ch-2 hidden md:block"></div>
 
         <div className="flex-1 flex flex-col justify-center w-full">
-          <div className="hero-title-wrapper">
-            <h1 className="hero-title font-sans">
+          <div className="hero-title-wrapper select-none">
+            
+            {/* 🔴 進階互動大字容器 */}
+            <div 
+              className="hero-repo-container" 
+              ref={repoTextRef}
+              onMouseDown={handleRepoClick}
+            >
               REPO
-            </h1>
+              <div className="hero-layer hero-layer-blue">REPO</div>
+              <div className="hero-layer hero-layer-green">REPO</div>
+              <div className="hero-layer hero-layer-grey">REPO</div>
+              <div className="hero-shockwave"></div>
+            </div>
+
           </div>
           
-          <div className="mt-8 md:mt-12 overflow-hidden flex justify-center w-full">
-            <p ref={subtitleRef} className="text-base md:text-lg text-zinc-700 font-bold reveal-text tracking-[0.5em] text-center px-4 py-2 uppercase">
+          <div className="mt-6 overflow-hidden flex justify-center w-full">
+            <p ref={subtitleRef} className="text-[10px] md:text-[11px] text-zinc-500 font-bold reveal-text tracking-[0.5em] text-center px-4 py-2 uppercase opacity-60">
               極簡架構，建構商業武器。
             </p>
           </div>
         </div>
 
         <div className="z-20 w-full flex justify-center pb-8">
-          <button className="magnetic-btn" ref={btnRef}>
+          <button 
+            className="magnetic-btn" 
+            ref={btnRef}
+            onClick={() => window.location.href = '/contactus'}
+          >
             <span>INITIALIZE SEQUENCE</span>
           </button>
         </div>
       </section>
 
       {/* ====================================================
-         第二頁 (Contact Us - Origin & Directive)
+         [ SEC.02 ] ORIGIN & DIRECTIVE (LOCKED 100%)
          ==================================================== */}
-      <section id="contactus" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
+      <section id="origin" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
         <div className="mb-20">
           <p className="font-mono-sys text-zinc-600 text-sm tracking-[0.3em] mb-4">
             [ SEC.02 ] ORIGIN & DIRECTIVE
@@ -116,7 +231,7 @@ export default function Home() {
       </section>
 
       {/* ====================================================
-         第三頁 (Protocol - Process)
+         [ SEC.03 ] EXECUTION PROTOCOL (LOCKED 100%)
          ==================================================== */}
       <section id="protocol" className="relative z-10 w-full min-h-screen max-w-7xl mx-auto px-6 md:px-12 py-32 border-t border-zinc-200">
         <div className="mb-20 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-8">
